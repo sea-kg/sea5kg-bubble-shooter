@@ -30,3 +30,14 @@
 *.exe
 *.out
 *.app
+
+build
+SDL_gfx
+Sounds/*_data
+Sounds/*.aup*
+*.psd
+*.o
+Thumbs.db
+icon.ico
+/tmp
+/sea5kg-bubble-shooter
