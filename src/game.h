@@ -42,6 +42,7 @@ class Game {
         Uint32 m_nLastTicks;
 
         std::vector<StateBall*> m_vBalls;
+        std::vector<StateBall*> m_vPlayerBalls;
 
         // This flag indicates whether the everything needs to be redrawn
         bool m_bRunning;
@@ -54,4 +55,7 @@ class Game {
         int m_nWindowHeight;
 
         void updateStateBalls();
+
+        void appendPlayerBells();
+        void resetLatestBall();
 };
