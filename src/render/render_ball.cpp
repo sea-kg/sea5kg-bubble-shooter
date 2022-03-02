@@ -19,13 +19,8 @@ RenderBall::RenderBall(int nPositionZ, SDL_Texture *pTexture, StateBall *pStateB
     m_nHalf = m_nBallWidth / 2 - m_rectDstBall.w / 2;
 
     m_pTexture = pTexture;
-    m_color = RenderBallColor::Random;
-    if (m_color == RenderBallColor::Random) {
-        int random = rand() % 6;
-        m_color = (RenderBallColor)random;
-        // std::cout << "color > " << (int)color  << std::endl;
-    }
-    m_rectSrcBall.x = 100 * (int)m_color;
+    
+    m_rectSrcBall.x = 100 * (int)(m_pStateBall->getColor());
 }
 
 RenderBall::~RenderBall() {
@@ -48,4 +43,8 @@ bool RenderBall::canDraw(const GameState& state) {
 
 void RenderBall::draw(SDL_Renderer* pRenderer) {
     SDL_RenderCopy(pRenderer, m_pTexture, &m_rectSrcBall, &m_rectDstBall);
+}
+
+StateBall *RenderBall::getState() {
+    return m_pStateBall;
 }

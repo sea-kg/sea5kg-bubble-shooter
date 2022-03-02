@@ -1,7 +1,8 @@
 #pragma once
 
 #include "render_window.h"
-#include "state_ball.h"
+#include "render_ball.h"
+
 #include <queue>
 
 const int GAME_FPS = 50;
@@ -41,8 +42,8 @@ class Game {
         int m_nFps;
         Uint32 m_nLastTicks;
 
-        std::vector<StateBall*> m_vBalls;
-        std::vector<StateBall*> m_vPlayerBalls;
+        std::vector<RenderBall*> m_vRenderBalls;
+        std::vector<RenderBall*> m_vRenderPlayerBalls;
 
         // This flag indicates whether the everything needs to be redrawn
         bool m_bRunning;

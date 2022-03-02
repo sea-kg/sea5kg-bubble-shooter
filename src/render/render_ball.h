@@ -3,16 +3,6 @@
 #include "render_object.h"
 #include "state_ball.h"
 
-enum class RenderBallColor {
-    Random = -1,
-    Red = 0,
-    Green = 1,
-    Yellow = 2,
-    Blue = 3,
-    Teal = 4,
-    Purple = 5
-};
-
 class RenderBall : public RenderObject {
 
     public:
@@ -22,6 +12,8 @@ class RenderBall : public RenderObject {
         virtual bool canDraw(const GameState& state) override;
         virtual void draw(SDL_Renderer* pRenderer) override;
 
+        StateBall *getState();
+
     private:
         int m_nBallWidth;
         int m_nBallHeight;
@@ -29,7 +21,6 @@ class RenderBall : public RenderObject {
         SDL_Texture *m_pTexture;
         StateBall *m_pStateBall;
 
-        RenderBallColor m_color;
         SDL_Rect m_rectSrcBall;
         SDL_Rect m_rectDstBall;
 };

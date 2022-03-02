@@ -12,6 +12,8 @@ StateBall::StateBall() {
     m_bTargetMove = false;
     m_nTargetVectorX = 0.0;
     m_nTargetVectorY = 0.0;
+    m_bDestroy = false;
+    setColor(RenderBallColor::Random);
 }
 
 float StateBall::getX() {
@@ -57,3 +59,22 @@ float StateBall::getTargetVectorY() {
     return m_nTargetVectorY;
 }
 
+RenderBallColor StateBall::getColor() {
+    return m_nColor;
+}
+
+void StateBall::setColor(RenderBallColor nColor) {
+    m_nColor = nColor;
+    if (m_nColor == RenderBallColor::Random) {
+        int random = rand() % 6;
+        m_nColor = (RenderBallColor)random;
+    }
+}
+
+void StateBall::destroy() {
+    m_bDestroy = true;
+}
+
+bool StateBall::isDestroy() {
+    return m_bDestroy;
+}

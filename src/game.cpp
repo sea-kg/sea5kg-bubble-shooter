@@ -32,8 +32,8 @@ Game::Game(RenderWindow *pWindow) {
             rand() % m_nWindowWidth,
             rand() % m_nWindowHeight / 2
         );
-        m_vBalls.push_back(pStateBall);
         RenderBall *pBall = new RenderBall(1000, m_pTextureBall, pStateBall);
+        m_vRenderBalls.push_back(pBall);
         pWindow->addGameObject(pBall);
     }
 
@@ -89,11 +89,11 @@ void Game::handleEvents() {
             // event.motion.x, event.motion.y
         } else if (m_event.type == SDL_MOUSEBUTTONDOWN) {
             std::cout << "TODO: SDL_MOUSEBUTTONDOWN" << std::endl;
-            if (!m_vPlayerBalls[0]->isTargetMove()) {
-                float nX = m_vPlayerBalls[0]->getX();
-                float nY = m_vPlayerBalls[0]->getY();
+            if (!m_vRenderPlayerBalls[0]->getState()->isTargetMove()) {
+                float nX = m_vRenderPlayerBalls[0]->getState()->getX();
+                float nY = m_vRenderPlayerBalls[0]->getState()->getY();
 
-                m_vPlayerBalls[0]->setTargetVector(
+                m_vRenderPlayerBalls[0]->getState()->setTargetVector(
                     (m_event.motion.x - nX) / 25.0,
                     (m_event.motion.y - nY) / 25.0
                 );
@@ -110,23 +110,38 @@ void Game::handleEvents() {
 }
 
 void Game::updateStateBalls() {
+    std::vector<int> vDestroies;
+    for (int x = 0; x < m_vRenderBalls.size(); x++) {
+        if (m_vRenderBalls[x]->getState()->isDestroy()) {
+            vDestroies.push_back(x);
+        }
+    }
+    std::reverse(vDestroies.begin(), vDestroies.end());
+
+    for (int x = 0; x < vDestroies.size(); x++) {
+        std::vector<RenderBall *>::iterator it = m_vRenderBalls.begin() + vDestroies[x];
+        RenderBall *pBall = *it;
+        m_vRenderBalls.erase(m_vRenderBalls.begin() + vDestroies[x]);
+        m_pWindow->removeObject(pBall);
+    }
+
     std::vector<float> newCoordX;
     std::vector<float> newCoordY;
-    float nStrongAttraction = 8000.0 * m_vBalls.size();
-    for (int x = 0; x < m_vBalls.size(); x++) {
-        float nX1 = m_vBalls[x]->getX();
-        float nY1 = m_vBalls[x]->getY();
-        float nRadius1 = m_vBalls[x]->getRadius();
+    float nStrongAttraction = 8000.0 * m_vRenderBalls.size();
+    for (int x = 0; x < m_vRenderBalls.size(); x++) {
+        float nX1 = m_vRenderBalls[x]->getState()->getX();
+        float nY1 = m_vRenderBalls[x]->getState()->getY();
+        float nRadius1 = m_vRenderBalls[x]->getState()->getRadius();
 
         float new_x = 0.0;
         float new_y = 0.0;
-        for (int y = 0; y < m_vBalls.size(); y++) {
+        for (int y = 0; y < m_vRenderBalls.size(); y++) {
             if (y == x) {
                 continue;
             }
-            float nRadius2 = m_vBalls[y]->getRadius();
-            float dx = m_vBalls[y]->getX() - nX1;
-            float dy = m_vBalls[y]->getY() - nY1;
+            float nRadius2 = m_vRenderBalls[y]->getState()->getRadius();
+            float dx = m_vRenderBalls[y]->getState()->getX() - nX1;
+            float dy = m_vRenderBalls[y]->getState()->getY() - nY1;
             float nDist = std::sqrt(dx*dx + dy*dy);
             float nAngel = std::asin(dx / nDist);
             float nR2 = (nRadius2 + nRadius1) + 5.0;
@@ -173,37 +188,40 @@ void Game::updateStateBalls() {
     //     << "  newCoords[x].y() = " << newCoords[0].y()
     //     << "  m_nWidthWindow = " << m_nWidthWindow
     //     << std::endl;
-    for (int x = 0; x < m_vBalls.size(); x++) {
-        m_vBalls[x]->setXY(
+    for (int x = 0; x < m_vRenderBalls.size(); x++) {
+        m_vRenderBalls[x]->getState()->setXY(
             newCoordX[x],
             newCoordY[x]
         );
     }
     
 
-    for (int i = 0; i < m_vPlayerBalls.size(); i++) {
-        if (m_vPlayerBalls[i]->isTargetMove()) {
-            float nTargetVectorX = m_vPlayerBalls[i]->getTargetVectorX();
-            float nTargetVectorY = m_vPlayerBalls[i]->getTargetVectorY();
-            float nX = m_vPlayerBalls[i]->getX();
-            float nY = m_vPlayerBalls[i]->getY();
+    for (int i = 0; i < m_vRenderPlayerBalls.size(); i++) {
+        if (m_vRenderPlayerBalls[i]->getState()->isTargetMove()) {
+            float nTargetVectorX = m_vRenderPlayerBalls[i]->getState()->getTargetVectorX();
+            float nTargetVectorY = m_vRenderPlayerBalls[i]->getState()->getTargetVectorY();
+            float nX = m_vRenderPlayerBalls[i]->getState()->getX();
+            float nY = m_vRenderPlayerBalls[i]->getState()->getY();
             float nNewX = nX + nTargetVectorX;
             float nNewY = nY + nTargetVectorY;
 
-            float nRadius = m_vPlayerBalls[i]->getRadius();
+            float nRadius = m_vRenderPlayerBalls[i]->getState()->getRadius();
             if (nNewX < 0 || nNewX > m_nWindowWidth) {
                 resetLatestBall();
                 break;
             }
-            m_vPlayerBalls[i]->setXY(nNewX, nNewY);
+            m_vRenderPlayerBalls[i]->getState()->setXY(nNewX, nNewY);
             
-            for (int x = 0; x < m_vBalls.size(); x++) {
-                float nDiffX = m_vBalls[x]->getX() - nX;
-                float nDiffY = m_vBalls[x]->getY() - nY;
-                float nRadius2 = m_vBalls[x]->getRadius() + nRadius;
+            for (int x = 0; x < m_vRenderBalls.size(); x++) {
+                float nDiffX = m_vRenderBalls[x]->getState()->getX() - nX;
+                float nDiffY = m_vRenderBalls[x]->getState()->getY() - nY;
+                float nRadius2 = m_vRenderBalls[x]->getState()->getRadius() + nRadius + 10.0;
                 float nDistance = std::sqrt(nDiffX*nDiffX + nDiffY*nDiffY);
 
                 if (nDistance < nRadius2) {
+                    if (m_vRenderBalls[x]->getState()->getColor() == m_vRenderPlayerBalls[i]->getState()->getColor()) {
+                        m_vRenderBalls[x]->getState()->destroy();
+                    }
                     resetLatestBall();
                     break;
                 }
@@ -214,18 +232,18 @@ void Game::updateStateBalls() {
 }
 
 void Game::appendPlayerBells() {
-    int nMax = 4 - m_vPlayerBalls.size();
+    int nMax = 4 - m_vRenderPlayerBalls.size();
     for (int i = 0; i < nMax; i++) {
         StateBall *pStateBall = new StateBall();
         pStateBall->setRadius(16);
-        
-        m_vPlayerBalls.push_back(pStateBall);
+
         RenderBall *pBall = new RenderBall(1000, m_pTextureBall, pStateBall);
+        m_vRenderPlayerBalls.push_back(pBall);
         m_pWindow->addGameObject(pBall);
     }
 
-    for (int i = 0; i < m_vPlayerBalls.size(); i++) {
-        m_vPlayerBalls[i]->setXY(
+    for (int i = 0; i < m_vRenderPlayerBalls.size(); i++) {
+        m_vRenderPlayerBalls[i]->getState()->setXY(
             m_nWindowWidth / 2 - i * 40,
             m_nWindowHeight - 40
         );
@@ -233,12 +251,13 @@ void Game::appendPlayerBells() {
 }
 
 void Game::resetLatestBall() {
-    m_vPlayerBalls[0]->resetTargetMove();
-    m_vBalls.push_back(m_vPlayerBalls[0]);
+    m_vRenderPlayerBalls[0]->getState()->resetTargetMove();
+    m_vRenderPlayerBalls[0]->getState()->destroy();
+    m_vRenderBalls.push_back(m_vRenderPlayerBalls[0]);
 
-    std::reverse(m_vPlayerBalls.begin(), m_vPlayerBalls.end());
-    m_vPlayerBalls.pop_back();
-    std::reverse(m_vPlayerBalls.begin(), m_vPlayerBalls.end());
+    std::reverse(m_vRenderPlayerBalls.begin(), m_vRenderPlayerBalls.end());
+    m_vRenderPlayerBalls.pop_back();
+    std::reverse(m_vRenderPlayerBalls.begin(), m_vRenderPlayerBalls.end());
 
     appendPlayerBells();
 }
