@@ -33,6 +33,7 @@ list (APPEND WSJCPP_INCLUDE_DIRS "src/game")
 # list (APPEND WSJCPP_SOURCES "SDLMain.m")
 
 # render
+list (APPEND WSJCPP_SOURCES "src/render/render_background.cpp")
 list (APPEND WSJCPP_SOURCES "src/render/render_ball.cpp")
 list (APPEND WSJCPP_SOURCES "src/render/render_object.cpp")
 list (APPEND WSJCPP_SOURCES "src/render/render_window.cpp")

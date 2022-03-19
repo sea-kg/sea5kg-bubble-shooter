@@ -7,6 +7,7 @@
 #include "game.h"
 
 #include "render_ball.h"
+#include "render_background.h"
 
 Game::Game() {
     std::cout << "Game() called" << std::endl;
@@ -19,10 +20,13 @@ Game::Game(RenderWindow *pWindow) {
     m_pWindow = pWindow;
     pWindow->getWindowSize(&m_nWindowWidth, &m_nWindowHeight);
 
+    m_pTextureBackground = m_pWindow->loadTexture("data/background.png");
     m_pTextureBall = m_pWindow->loadTexture("data/textures/ball.png");
 
     m_pGameState = new GameState(m_nWindowWidth, m_nWindowHeight);
 
+    pWindow->addGameObject(new RenderBackground(0, m_pTextureBackground));
+    
     // init balls
     for (int i = 0; i < 500; i++) {
         StateBall *pStateBall = new StateBall();
@@ -207,11 +211,13 @@ void Game::updateStateBalls() {
 
             float nRadius = m_vRenderPlayerBalls[i]->getState()->getRadius();
             if (nNewX < 0 || nNewX > m_nWindowWidth) {
-                resetLatestBall();
+                resetLatestBall(true);
                 break;
             }
             m_vRenderPlayerBalls[i]->getState()->setXY(nNewX, nNewY);
             
+            bool bDestory = false;
+            bool bFound = false;
             for (int x = 0; x < m_vRenderBalls.size(); x++) {
                 float nDiffX = m_vRenderBalls[x]->getState()->getX() - nX;
                 float nDiffY = m_vRenderBalls[x]->getState()->getY() - nY;
@@ -219,13 +225,16 @@ void Game::updateStateBalls() {
                 float nDistance = std::sqrt(nDiffX*nDiffX + nDiffY*nDiffY);
 
                 if (nDistance < nRadius2) {
+                    bFound = true;
                     if (m_vRenderBalls[x]->getState()->getColor() == m_vRenderPlayerBalls[i]->getState()->getColor()) {
                         m_vRenderBalls[x]->getState()->destroy();
+                        bDestory = true;
+                        // m_vRenderPlayerBalls[0]->getState()->resetTargetMove();
                     }
-                    resetLatestBall();
-                    break;
                 }
-
+            }
+            if (bFound) {
+                resetLatestBall(bDestory);
             }
         }
     }
@@ -250,9 +259,11 @@ void Game::appendPlayerBells() {
     }
 }
 
-void Game::resetLatestBall() {
+void Game::resetLatestBall(bool bDestroy) {
     m_vRenderPlayerBalls[0]->getState()->resetTargetMove();
-    m_vRenderPlayerBalls[0]->getState()->destroy();
+    if (bDestroy) {
+        m_vRenderPlayerBalls[0]->getState()->destroy();
+    }
     m_vRenderBalls.push_back(m_vRenderPlayerBalls[0]);
 
     std::reverse(m_vRenderPlayerBalls.begin(), m_vRenderPlayerBalls.end());

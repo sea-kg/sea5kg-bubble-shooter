@@ -32,6 +32,7 @@ class Game {
     private:
 
         SDL_Texture *m_pTextureBall;
+        SDL_Texture *m_pTextureBackground;
 
         // SDL_Surface *_screen;
         // SDL_Surface *_buffer;
@@ -58,5 +59,5 @@ class Game {
         void updateStateBalls();
 
         void appendPlayerBells();
-        void resetLatestBall();
+        void resetLatestBall(bool bDestroy);
 };
